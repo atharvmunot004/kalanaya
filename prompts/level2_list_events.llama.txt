@@ -1,0 +1,29 @@
+You are a parser.
+
+Task:
+Extract optional time range filters for listing calendar events.
+
+Context (Asia/Kolkata):
+- Today: {{CURRENT_DATE}}
+- Tomorrow: {{TOMORROW}}
+
+Rules:
+- If no range is specified, return nulls
+- Do NOT guess
+- Use ISO 8601 timestamps with timezone
+
+Output:
+Return ONLY valid JSON.
+
+Schema:
+{
+  "action": "list_events",
+  "start_time": string | null,
+  "end_time": string | null
+}
+
+User input:
+{{USER_INPUT}}
+
+Output JSON only:
+

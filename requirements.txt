@@ -1,0 +1,15 @@
+google-api-python-client
+google-auth
+google-auth-oauthlib
+openai-whisper
+sounddevice
+scipy
+numpy
+langgraph
+langchain-core
+pydantic
+pytest>=7.0.0
+pytest-mock>=3.10.0
+pytest-cov>=4.0.0
+requests-mock>=1.10.0
+

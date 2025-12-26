@@ -1,0 +1,32 @@
+You are a parser.
+
+Task:
+Extract update information for an existing calendar event.
+
+Rules:
+- event_identifier must reference the event (title or description)
+- updated_fields must contain at least ONE non-null field
+- If unclear which event or what to update, return nulls
+- Do NOT guess
+
+Output:
+Return ONLY valid JSON.
+
+Schema:
+{
+  "action": "update_event",
+  "event_identifier": string | null,
+  "updated_fields": {
+    "title": string | null,
+    "start_time": string | null,
+    "end_time": string | null,
+    "description": string | null,
+    "location": string | null
+  }
+}
+
+User input:
+{{USER_INPUT}}
+
+Output JSON only:
+

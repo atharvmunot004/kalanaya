@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json.schemastore.org/llm.json",
+  "name": "Kalanaya",
+  "description": "Voice-controlled calendar assistant that uses speech-to-text (Whisper) and LLM-based intent parsing (Ollama) to manage Google Calendar events through natural language commands.",
+  "version": "0.1.0",
+  "language": "python",
+  "techStack": [
+    "Python 3.9+",
+    "Google Calendar API",
+    "OpenAI Whisper (speech-to-text)",
+    "Ollama (LLM for intent parsing)",
+    "sounddevice (audio recording)",
+    "scipy/numpy (audio processing)"
+  ],
+  "architecture": {
+    "overview": "Modular architecture with separate layers for speech input, intent parsing, action routing, and calendar operations",
+    "components": {
+      "speech": {
+        "path": "src/speech/",
+        "description": "Handles audio recording and speech-to-text transcription using Whisper",
+        "files": [
+          "speech_input.py - Records audio from microphone",
+          "speech_to_text.py - Transcribes audio using OpenAI Whisper"
+        ]
+      },
+      "intent": {
+        "path": "src/intent/",
+        "description": "Parses natural language commands into structured calendar actions using Ollama LLM",
+        "files": [
+          "intent_engine_ollama.py - Main intent parsing engine using Ollama API"
+        ],
+        "config": {
+          "prompt_template": "config/intent_prompt.txt",
+          "schema": "config/intent_schema.json"
+        }
+      },
+      "actions": {
+        "path": "src/actions/",
+        "description": "Executes calendar operations (create, update, delete, list events) via Google Calendar API",
+        "files": [
+          "calendar_client.py - Google Calendar API authentication and service setup",
+          "calendar_actions.py - CRUD operations for calendar events"
+        ]
+      },
+      "router": {
+        "path": "src/router/",
+        "description": "Routes parsed intents to appropriate calendar action handlers",
+        "files": [
+          "router.py - Main routing logic that validates intents and executes calendar actions"
+        ],
+        "features": [
+          "Intent validation using validators",
+          "Event discovery by title for update/delete operations",
+          "Comprehensive error handling and logging",
+          "Confidence threshold checking"
+        ]
+      },
+      "main": {
+        "path": "src/main.py",
+        "description": "Main application entry point with text and voice input modes",
+        "features": [
+          "Text mode: Direct text input for calendar commands",
+          "Voice mode: Audio recording and transcription",
+          "Full pipeline integration: speech → intent → router → actions",
+          "User-friendly result formatting",
+          "Comprehensive logging"
+        ]
+      },
+      "utils": {
+        "path": "src/utils/",
+        "description": "Utility functions for datetime handling, logging, and validation",
+        "files": [
+          "datetime_utils.py - Date/time parsing and formatting utilities",
+          "logging.py - Logging configuration with console and file output",
+          "validators.py - Input validation functions for intents and event parameters"
+        ],
+        "usage": [
+          "Logging: Used throughout router and main for debugging and monitoring",
+          "Validators: Used in router to validate intents and event parameters before execution"
+        ]
+      }
+    }
+  },
+  "configuration": {
+    "settings": "config/settings.py - Centralized configuration including paths, API endpoints, and defaults",
+    "credentials": {
+      "location": "credentials/",
+      "files": [
+        "google_client_secret.json - Google OAuth credentials",
+        "token.pickle - OAuth token cache"
+      ]
+    },
+    "keySettings": {
+      "ollama": {
+        "url": "http://localhost:11434/api/generate",
+        "model": "llama3.2:latest"
+      },
+      "calendar": {
+        "timezone": "Asia/Kolkata",
+        "scopes": ["https://www.googleapis.com/auth/calendar"]
+      },
+      "speech": {
+        "sample_rate": 16000,
+        "default_duration": 5
+      }
+    }
+  },
+  "intentSchema": {
+    "actions": ["create_event", "update_event", "delete_event", "list_events", "none"],
+    "fields": {
+      "action": "One of the supported calendar actions",
+      "title": "Short semantic title (2-5 words) extracted from user input",
+      "start_time": "RFC3339 datetime string with timezone (Asia/Kolkata) or null",
+      "end_time": "RFC3339 datetime string with timezone or null",
+      "description": "Optional description or error message",
+      "confidence": "Float 0.0-1.0 indicating intent clarity"
+    },
+    "rules": [
+      "All timestamps must be RFC3339 format with Asia/Kolkata timezone",
+      "Titles should be semantic and concise, not verbatim user input",
+      "When user says 'today' or 'tomorrow', use current date context",
+      "If time is missing, infer reasonable defaults",
+      "If end_time is not specified, set to null",
+      "Confidence < 0.5 only when intent is unclear, not for missing details"
+    ]
+  },
+  "testing": {
+    "location": "tests/",
+    "structure": {
+      "actions": "tests/actions/ - Tests for calendar CRUD operations",
+      "intent": "tests/intent/ - Tests for intent parsing with 39+ test cases",
+      "speech": "tests/speech/ - Tests for audio recording and transcription"
+    },
+    "results": "test_results/ - JSON and text output files from test runs"
+  },
+  "dependencies": {
+    "core": [
+      "google-api-python-client",
+      "google-auth",
+      "google-auth-oauthlib"
+    ],
+    "speech": [
+      "openai-whisper",
+      "sounddevice",
+      "scipy",
+      "numpy"
+    ],
+    "llm": [
+      "requests (for Ollama API)"
+    ]
+  },
+  "workflow": {
+    "typicalFlow": [
+      "1. User input (text or voice) → main.py receives command",
+      "2. If voice: record_audio() → transcribe() → text",
+      "3. Text → OllamaIntentEngine.parse() → structured intent JSON",
+      "4. Intent → router.route() validates and routes to action",
+      "5. Action → calendar_actions executes Google Calendar API call",
+      "6. Result → formatted and displayed to user"
+    ],
+    "modes": {
+      "textMode": "Direct text input, immediate processing",
+      "voiceMode": "Audio recording → transcription → text processing"
+    },
+    "errorHandling": [
+      "Intent validation failures return error with details",
+      "Low confidence (< 0.5) intents are rejected",
+      "Calendar service errors are caught and logged",
+      "All errors include user-friendly messages"
+    ]
+  },
+  "importantNotes": {
+    "ollama": "Requires Ollama server running locally on port 11434 with llama3.2:latest model",
+    "googleAuth": "Requires OAuth setup with Google Calendar API credentials",
+    "timezone": "All datetime operations use Asia/Kolkata timezone",
+    "intentParsing": "Uses prompt engineering with template substitution for current date/time context"
+  },
+  "fileStructure": {
+    "root": [
+      "src/ - Main source code",
+      "config/ - Configuration files and prompts",
+      "credentials/ - OAuth credentials (gitignored)",
+      "tests/ - Test suites",
+      "test_results/ - Test output files",
+      "logs/ - Application logs (created at runtime)",
+      "venv/ - Python virtual environment"
+    ],
+    "entryPoint": "src/main.py - Run with: python -m src.main or python src/main.py"
+  },
+  "logging": {
+    "location": "logs/",
+    "loggers": [
+      "main - Application entry point and user interaction",
+      "router - Intent routing and action execution"
+    ],
+    "output": [
+      "Console: INFO level with timestamps",
+      "File: Detailed logs with function names and line numbers"
+    ]
+  }
+}
+

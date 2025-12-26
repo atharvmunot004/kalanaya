@@ -1,0 +1,7 @@
+include README.md
+include requirements.txt
+include config/*.txt
+include config/*.json
+recursive-include credentials *.json
+recursive-include credentials *.pickle
+

@@ -1,0 +1,9 @@
+{
+    "action": "create_event | update_event | delete_event | list_events | none",
+    "title": "string",
+    "start_time": "RFC3339 | null",
+    "end_time": "RFC3339 | null",
+    "description": "string",
+    "confidence": "float between 0 and 1"
+}
+  
